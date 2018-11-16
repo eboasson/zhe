@@ -36,3 +36,9 @@ script:
   - cd build
   - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DTCP=${ZCFG_TCP:-OFF} -DSSL=${ZCFG_SSL:-OFF} -DZHE_CONFIG=${ZCFG} ..
   - cmake --build .
+  - if [ "${ZCFG_TCP:-OFF}" -eq "ON" ] ; then exit 0 ; else
+      pids="" ;
+      for k in 0 1 2 3 ; do example/throughput/throughput -D10 -X10 -pqxk$k & pids="$pids $!" ; done ;
+      sleep 12 ; kill -9 $pids 2>/dev/null ;
+      res=0 ; for p in $pids ; do wait $p ; x=$? ; [ $x -ne 0 ] && res=$x ; done ; exit $res ;
+    fi
